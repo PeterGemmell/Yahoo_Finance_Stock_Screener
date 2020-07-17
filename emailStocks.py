@@ -141,4 +141,72 @@ def stocks_to_plaintext(stocks):
         text += ' ' * (spaces+2)
         text += stock[1]
         text += '\n'
-    return text 
+    return text
+
+
+
+def email_stock_info(username, password, fromaddr, toaddr):
+    email_msg = ''
+    html_msg  = """\
+	<html>
+		<head></head>
+		<body>
+			<p>
+	"""
+
+    today = 'http://biz.yahoo.com/research/earncal/today.html'
+    stocks = get_stocks(today)
+    stocks = screen_positive__eps(stocks)
+    if stocks:
+        email_msg += 'Today:\n'
+        html_msg += 'Today:<br>'
+        stocks = sort_today(stocks)
+        email_msg += stocks_to_plaintext(stocks) + '\n'
+        html_msg += stocks_to_htmlstring(stocks) + '<br>'
+    else:
+        email_msg += 'No positive stocks for today.\n\n'
+        html_msg += 'No positive stocks for today.<br><br>'
+
+    next_day = get_next_date()
+    next_url = 'http://biz.yahoo.com/research/earncal/' + next_day + '.html'
+    try:
+        stocks = get_stocks(next_url)
+    except:
+        print 'Unable to open URL for next day.'
+        email_msg += 'Unable to open URL for next day.'
+        html_msg += 'Unable to open URL for next day.'
+    else:
+        stocks = screen_positive__eps(stocks)
+        if stocks:
+            email_msg += next_day + ':\n'
+            html_msg += next_day + ':<br>'
+            stocks = sort_tom(stocks)
+            email_msg += stocks_to_plaintext(stocks)
+            html_msg += stocks_to_htmlstring(stocks)
+        else:
+            email_msg += 'No positive stocks for next day.\n'
+            html_msg += 'No postive stocks for next day.<br>'
+
+    html_msg += """\
+			<br>
+			</p>
+		</body>
+	</html>
+	"""
+
+
+
+
+    mime_msg = MIMEMultipart('alternative')
+    mime_msg.attach(MIMEText(email_msg, 'plain'))
+    mime_msg.attach(MIMEText(html_msg, 'html'))
+    mime_msg['Subject'] = 'Stock Information'
+    mime_msg['From'] = fromaddr
+    mime_msg['To'] = toaddr
+
+    send_email(username, password, fromaddr, toaddr, mime_msg)
+
+
+
+if __name__ == '__main__':
+    email_stock_info(Uname, Pword, Faddr, Taddr)
