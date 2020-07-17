@@ -97,3 +97,48 @@ def sort_tom(stocks):
         if stock[4] == 'Time Not Supplied':
             sorted.append(stock)
     return sorted
+
+
+def stocks_to_htmlstring(stocks):
+    text = '<table border=0 cellpadding=2 cellspacing=0 width=600>'
+    bgs = ['eeeeee','dcdcdc']
+    i = 1
+    for stock in stocks:
+        color = bgs[i%2]
+        i += 1
+        text += '\n<tr bgcolor=' + color + '><td><a href="\n\t' \
+                + stock[1] + '">' + stock[0][:30] + '</a></td>'
+        text += '<td align=center>' + stock[2][:8] + '</td>'
+        text += '<td align=center>' + stock[3][:4] + '</td>'
+        text += '<td align=center><small>' + stock[4] + '</small></td></tr>'
+    text += '</table>'
+    return text
+
+
+
+def stocks_to_plaintext(stocks):
+    text = ''
+    for stock in stocks:
+        text += stock[0][:30]
+        spaces = 30 - len(stock[0])
+        if spaces < 0:
+            spaces = 0
+        text += ' ' * (spaces + 2)
+        text += stock[2][:8]
+        spaces = 8 - len(stock[2])
+        if spaces < 0:
+            spaces = 0
+        text += ' ' * spaces
+        text += stocks[3][:4]
+        spaces = 4 - len(stock[3])
+        if spaces < 0:
+            spaces = 0
+        text += ' ' * (spaces+2)
+        text += stock[4]
+        spaces = 18 - len(stock[4])
+        if spaces < 0:
+            spaces = 0
+        text += ' ' * (spaces+2)
+        text += stock[1]
+        text += '\n'
+    return text 
