@@ -1,37 +1,39 @@
 import re
-import urllib2
+# import urllib2
+from urllib.request import urlopen
 from bs4 import BeautifulSoup
 import time
 import datetime
-import smtplib
+import smtplib # this is pythons built in module for sending and routing email between mail servers. Simple Mail Transfer Protocol.
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
-Uname = 'gmail_username'
-Pword = 'gmail_password'
-Faddr = Uname + '@gmail.com'
-Taddr = 'recipient@gmail.com'
+Uname = ''
+Pword = ''
+Faddr = Uname + ''
+Taddr = ''
 
 
 def send_email(username, password, fromaddr, toaddr, msg):
-    print 'Sending stock information to ' + toaddr
+    print ('Sending stock information to ' + toaddr)
     try:
             server = smtplib.SMTP('smtp.gmail.com:587')
+            server.ehlo()
             server.starttls()
             server.login(username,password)
             server.sendmail(fromaddr, toaddr, msg.as_string())
             server.quit()
     except:
-            print 'Unable to send email'
+            print ('Unable to send email')
 
 
 
 def get_stocks(url):
-    print 'Retrieving stock information from ' + url
-    page = urllib2.urlopen(url)
-    soup = BeautifulSoup(page)
+    print ('Retrieving stock information from ' + url)
+    page = urlopen(url)
+    soup = BeautifulSoup(page, 'html.parser')
 
-    source = str(soup.find_all('table')[5])
+    source = str(soup.find_all('table')[0]) # Changed from 5.
     table = re.findall('><td>(.*?)</td></tr>', source, re.S)
 
     stocks = []
@@ -48,7 +50,7 @@ def get_stocks(url):
 def get_next_date():
         today = datetime.date.today()
         next = today + datetime.timedelta(days= 7-today.weekday() if today.weekday()>3 else 1)
-        next = next timetuple()
+        next = next.timetuple()
 
         y = str(next.tm_year)
         m = next.tm_mon
@@ -67,7 +69,7 @@ def get_next_date():
 
 
 def screen_positive__eps(stocks):
-    print 'Screening stocks for positive EPS...'
+    print ('Screening stocks for positive EPS...')
     positives = []
     for stock in stocks:
             if stock[3] != 'N/A' and float(stock[3]) > 0.0:
@@ -76,7 +78,7 @@ def screen_positive__eps(stocks):
 
 
 def sort_today(stocks):
-        print 'Sorting todays stocks...'
+        print ('Sorting todays stocks...')
         sorted = []
         for stock in stocks:
                 if stock[4] == 'After Market Close':
@@ -88,7 +90,7 @@ def sort_today(stocks):
 
 
 def sort_tom(stocks):
-    print 'Sorting next business days stocks...'
+    print ('Sorting next business days stocks...')
     sorted = []
     for stock in stocks:
         if stock[4] == 'Before Market Open':
@@ -172,7 +174,7 @@ def email_stock_info(username, password, fromaddr, toaddr):
     try:
         stocks = get_stocks(next_url)
     except:
-        print 'Unable to open URL for next day.'
+        print ('Unable to open URL for next day.')
         email_msg += 'Unable to open URL for next day.'
         html_msg += 'Unable to open URL for next day.'
     else:
