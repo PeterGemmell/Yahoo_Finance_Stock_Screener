@@ -69,3 +69,80 @@ def sort_today(stocks):
             sorted.append(stock)
 
     return sorted
+
+
+
+def sort_tom(stocks):
+    sorted = []
+    for stock in stocks:
+        if stock[4] == 'Before Market Open':
+            sorted.append(stock)
+    for stock in stocks:
+        if stock[4] == 'Time Not Supplied':
+            sorted.append(stock)
+
+    return sorted
+
+
+def stocks_to_text(stocks):
+    text = ''
+    for stock in stocks:
+        text += stock[0][:30]
+        spaces = 30 - len(stock[0])
+        if spaces < 0:
+            spaces = 0
+        text += ' ' * (spaces + 2)
+        text += stock[2][:12]
+        spaces = 13 - len(stock[2])
+        if spaces < 0:
+            spaces = 0
+        text += ' ' * spaces
+        text += stock[3][:4]
+        spaces = 4 - len(stock[3])
+        if spaces < 0:
+            spaces = 0
+        text += ' ' * (spaces+2)
+        text += stock[4]
+        text += '\n'
+    return text
+
+
+
+def print_stock_info():
+    msg = ''
+
+    today = 'http://biz.yahoo.com/research/earncal/today.html'
+    stocks = get_stocks(today)
+    stocks = screen_positive_eps(stocks)
+    stocks = sort_today(stocks)
+
+    if stocks:
+        msg += 'Today:\n'
+        msg += stocks_to_text(stocks) + '\n'
+    else:
+        msg += 'No positive stocks for today.\n'
+
+    next_day = get_next_date()
+    next_url = 'http://biz.yahoo.com/research/earncal/' + next_day + '.html'
+    try:
+        stocks = get_stocks(next_url)
+    except:
+        msg += 'Unable to open URL for next day.'
+    else:
+        stocks = screen_positive_eps(stocks)
+        stocks = sort_tom(stocks)
+        if stocks:
+            msg += next_day + ':\n'
+            msg += stocks_to_text(stocks)
+        else:
+            msg += 'No positive stocks for ' + next_day + '\n'
+
+
+    print ''
+    print msg
+
+
+
+
+if __name__ == '__main__':
+    print_stock_info()
